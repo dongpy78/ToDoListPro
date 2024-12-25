@@ -18,5 +18,8 @@
 
   "emmet.triggerExpansionOnTab": true,
   "editor.autoClosingBrackets": "always",
-  "editor.autoClosingQuotes": "always"
+  "editor.autoClosingQuotes": "always",
+  "[javascript]": {
+    "editor.defaultFormatter": "vscode.typescript-language-features"
+  }
 }
