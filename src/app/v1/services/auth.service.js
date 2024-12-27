@@ -1,10 +1,8 @@
 const authConstants = require("../../share/constants/auth.constants");
 const PasswordUtil = require("../../share/utils/password.util");
+const TokenUtil = require("../../share/utils/token.util");
 const AuthValidate = require("../../share/validates/auth.validate");
 const UserModel = require("../models/user.model");
-
-
-
 
 class AuthService {
   async register(body) {
@@ -46,7 +44,7 @@ class AuthService {
     }
   }
 
-  async login(body) {
+  async login(body, res) {
     // B1. Get data from body
     const { identity, password } = body;
 
@@ -71,19 +69,52 @@ class AuthService {
       user = await UserModel.findOneByUsername({ username: identity });
     }
 
+    // If account not exits
     if (!user) {
       throw new Error("Account does not exist");
     }
 
     // B5. Check Compare password
     const comparePassword = await PasswordUtil.compare({ password, hash: user.password_hash });
+
+    // If user enter password incorrect
     if (!comparePassword) {
       throw new Error("Password is incorrect");
     }
 
+    // if user enter password success
+    // B6. Generate token
+    const accessToken = TokenUtil.generateAccessToken({
+      payload: {
+        userId: user.id, email: user.email
+      },
+      secret: process.env.JWT_SECRET,
+    });
+    console.log(accessToken)
+
+    const refreshToken = TokenUtil.generateRefreshToken({
+      payload: {
+        userId: user.id, email: user.email
+      },
+      secret: process.env.JWT_SECRET,
+    });
+
+    res.cookie(authConstants.KeyCookie.RefreshToken, refreshToken, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+    });
 
     return {
       message: "Login successfully",
+      accessToken,
+    }
+  }
+
+  async logout(res) {
+    res.clearCookie(authConstants.KeyCookie.RefreshToken);
+    return {
+      message: "Logout successfully",
     }
   }
 }
