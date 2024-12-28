@@ -10,6 +10,19 @@ class TokenUtil {
   static generateRefreshToken({ payload, secret, expiresIn = authConstants.JwtTime.RefreshToken }) {
     return jwt.sign(payload, secret, { expiresIn });
   }
+
+  static verifyToken({ token, secret }) {
+    return jwt.verify(token, secret);
+  }
+
+  static removeBearerPrefix(token) {
+    if (token.startsWith("Bearer ")) {
+      return token.replace("Bearer ", "");
+    }
+    return token;
+  }
+
+
 }
 
 module.exports = TokenUtil;

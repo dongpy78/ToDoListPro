@@ -17,8 +17,6 @@ class UserModel {
     const values = [id];
 
     const { rows } = await pgDatabase.query(query, values);
-
-    console.log("rows", rows);
     return rows[0];
   }
 

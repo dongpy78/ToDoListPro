@@ -13,6 +13,15 @@ npm i bcrypt
 npm i nodemailer
 ```
 
+## Get Cookie From Client
+
+-   Install cookie-parser
+
+```sh
+npm i cookie-parser
+var cookieParser = require('cookie-parser')
+```
+
 ## Format code
 
 -   Sử dụng phím tắt
@@ -31,7 +40,7 @@ npm i jsonwebtoken
 
 ## Lệnh chạy github
 
-- Su dung token
+- Run github automation
 
 ```sh
 sh scripts/pushcode.sh

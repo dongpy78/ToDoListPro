@@ -1,13 +1,14 @@
 const userService = require("../services/user.service");
 
 class UserController {
-  async getUser(_, res) {
+  async getUser(req, res) {
     try {
-      const user = await userService.getUser();
-      return res.status(200).json(user);
+      const result = await userService.getUser(req);
+      return res.status(200).json(result);
     } catch (error) {
-      console.error("Error in UserController:", error.message);
-      return res.status(500).json({ message: "Internal Server Error", error: error.message });
+      return res.status(500).send({
+        message: error.message,
+      })
     }
   }
 }
