@@ -4,6 +4,7 @@ const TokenUtil = require("../../share/utils/token.util");
 const AuthValidate = require("../../share/validates/auth.validate");
 const UserModel = require("../models/user.model");
 const EmailUtils = require("../../share/utils/email.util");
+const tokenConfig = require("../../share/configs/token.config");
 
 
 class AuthService {
@@ -90,7 +91,7 @@ class AuthService {
       payload: {
         userId: user.id, email: user.email
       },
-      secret: process.env.JWT_SECRET,
+      secret: tokenConfig.AccessSecret,
     });
     console.log(accessToken)
 
@@ -98,7 +99,7 @@ class AuthService {
       payload: {
         userId: user.id, email: user.email
       },
-      secret: process.env.JWT_SECRET,
+      secret: tokenConfig.RefreshSecret,
     });
 
     res.cookie(AuthConstants.KeyCookie.RefreshToken, refreshToken, {

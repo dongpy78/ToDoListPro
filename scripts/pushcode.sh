@@ -1,3 +1,3 @@
 git add .
-git commit -m "feat: coding forgot_password and send email"
+git commit -m "feat: custom file config"
 git push
