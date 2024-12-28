@@ -1,8 +1,10 @@
-const authConstants = require("../../share/constants/auth.constants");
-const PasswordUtil = require("../../share/utils/password.util");
+const AuthConstants = require("../../share/constants/auth.constants");
+const PasswordUtils = require("../../share/utils/password.util");
 const TokenUtil = require("../../share/utils/token.util");
 const AuthValidate = require("../../share/validates/auth.validate");
 const UserModel = require("../models/user.model");
+const EmailUtils = require("../../share/utils/email.util");
+
 
 class AuthService {
   async register(body) {
@@ -30,7 +32,7 @@ class AuthService {
 
     // B4. If account not exits
     // B5. Hash password
-    const hashPassword = await PasswordUtil.hash({ password });
+    const hashPassword = await PasswordUtils.hash({ password });
 
     // B6. Save account to database
     const newUser = await UserModel.create({ email, password: hashPassword });
@@ -53,14 +55,14 @@ class AuthService {
 
     // B3. Check Validate
     let user;
-    if (checkTypeLogin === authConstants.LoginType.Email) {
+    if (checkTypeLogin === AuthConstants.LoginType.Email) {
       const checkEmail = AuthValidate.isEmailValid(identity);
       if (!checkEmail) {
         throw new Error("Invalid email format");
       }
       // B4. Check email exits or not exits
       user = await UserModel.findOneByEmail({ email: identity });
-    } else if (checkTypeLogin === authConstants.LoginType.Username) {
+    } else if (checkTypeLogin === AuthConstants.LoginType.Username) {
       const checkUsername = AuthValidate.isUsernameValid(identity);
       if (checkUsername) {
         throw new Error("Invalid username format");
@@ -75,7 +77,7 @@ class AuthService {
     }
 
     // B5. Check Compare password
-    const comparePassword = await PasswordUtil.compare({ password, hash: user.password_hash });
+    const comparePassword = await PasswordUtils.compare({ password, hash: user.password_hash });
 
     // If user enter password incorrect
     if (!comparePassword) {
@@ -99,7 +101,7 @@ class AuthService {
       secret: process.env.JWT_SECRET,
     });
 
-    res.cookie(authConstants.KeyCookie.RefreshToken, refreshToken, {
+    res.cookie(AuthConstants.KeyCookie.RefreshToken, refreshToken, {
       httpOnly: true,
       secure: true,
       sameSite: "none",
@@ -111,8 +113,51 @@ class AuthService {
     }
   }
 
+  async forgotPassword(body) {
+    // B1 Get data from body
+    const { email } = body;
+
+    // B2. Check validate email
+    const checkEmail = AuthValidate.isEmailValid(email);
+
+    // If email invalid error
+    if (!checkEmail) {
+      throw new Error("Invalid email");
+    }
+
+    // B3. Check email exist or not exist
+    const user = await UserModel.findOneByEmail({ email });
+
+    // If email not exist
+    if (!user) {
+      throw new Error("Email not exist");
+    }
+
+    // B4. Random new password
+    const newPassword = PasswordUtils.generateRandomPassword();
+
+    // B5. Hash new password
+    const hashPassword = await PasswordUtils.hash({ password: newPassword });
+
+    // B6. Update new password to database
+    UserModel.updatePassword({ id: user.id, password: hashPassword });
+
+    // B7. Send email new password  
+    EmailUtils.sendEmail({
+      to: email,
+      subject: "Your New Password",
+      text: `Hello ${user.email},\n\nYour password has been reset. Your new password is:\n\n${newPassword}\n\nPlease change your password after logging in.\n\nBest regards,\nClass02`,
+      html: `<p>Hello ${user.email},</p><p>Your password has been reset. Your new password is:</p><p><strong>${newPassword}</strong></p><p>Please change your password after logging in.</p><p>Best regards,<br>Class O2</p>`,
+    });
+
+    // B8. Return message
+    return {
+      message: "Forgot password",
+    };
+  }
+
   async logout(res) {
-    res.clearCookie(authConstants.KeyCookie.RefreshToken);
+    res.clearCookie(AuthConstants.KeyCookie.RefreshToken);
     return {
       message: "Logout successfully",
     }
@@ -120,3 +165,4 @@ class AuthService {
 }
 
 module.exports = new AuthService();
+

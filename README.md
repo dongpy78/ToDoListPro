@@ -5,6 +5,13 @@
 ```sh
 npm i bcrypt
 ```
+## Send Email
+
+-   Install node mailer
+
+```sh
+npm i nodemailer
+```
 
 ## Format code
 

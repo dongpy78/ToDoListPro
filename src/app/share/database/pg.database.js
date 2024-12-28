@@ -1,4 +1,4 @@
-const {Pool} = require("pg");
+const { Pool } = require("pg");
 const { pgConfig } = require("../configs/db.config");
 
 
